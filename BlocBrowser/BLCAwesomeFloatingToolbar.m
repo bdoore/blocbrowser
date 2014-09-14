@@ -154,7 +154,7 @@
     
     if (index != NSNotFound) {
         UILabel *label = [self.labels objectAtIndex:index];
-        label.userInteractionEnabled = enabled;
+        label.userInteractionEnabled = YES;
         label.alpha = enabled ? 1.0 : 0.25;
     }
 }

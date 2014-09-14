@@ -54,6 +54,8 @@
         [mainView addSubview:viewToAdd];
     }
     self.view = mainView;
+    
+    self.awesomeToolbar.userInteractionEnabled = false;
 }
 
 
