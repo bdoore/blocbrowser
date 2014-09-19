@@ -21,6 +21,8 @@
 @property (nonatomic, strong) UIActivityIndicatorView *activityIndicator;
 @property (nonatomic, strong) BLCAwesomeFloatingToolbar *awesomeToolbar;
 @property (nonatomic, assign) NSUInteger frameCount;
+@property (nonatomic, assign) CGFloat lastScale;
+
 
 @end
 
@@ -52,10 +54,15 @@
     {
 
         [mainView addSubview:viewToAdd];
+    
     }
+    
     self.view = mainView;
     
-    self.awesomeToolbar.userInteractionEnabled = false;
+    
+    
+    
+    //self.awesomeToolbar.userInteractionEnabled = false;
 }
 
 
@@ -69,7 +76,17 @@
     self.textField.frame=CGRectMake(0,0, width, itemHeight);
     self.webview.frame=CGRectMake(0, CGRectGetMaxY(self.textField.frame), width, browserHeight);
     
-    self.awesomeToolbar.frame = CGRectMake((width/2 - 140), browserHeight-40, 280, 60);
+    
+    
+//    CGFloat width = CGRectGetWidth(self.view.bounds);
+//    CGFloat browserHeight = CGRectGetHeight(self.view.bounds) - 50;
+    
+    NSLog(@" %f, %f, %f, %f", self.awesomeToolbar.frame.origin.x, self.awesomeToolbar.frame.origin.y, self.awesomeToolbar.frame.size.height, self.awesomeToolbar.frame.size.width);
+    
+    
+    if (self.awesomeToolbar.frame.size.height==0 && self.awesomeToolbar.frame.size.width ==0) {
+        self.awesomeToolbar.frame = CGRectMake((width/2 - 140), browserHeight-40, 280, 60);
+    }
 
     
 }
@@ -80,6 +97,7 @@
     [super viewDidLoad];
     
     self.edgesForExtendedLayout = UIRectEdgeNone;
+    _lastScale = 1;
     
     self.activityIndicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.activityIndicator];
@@ -209,6 +227,42 @@
         [self.webview reload];
     }
 }
+
+- (void) floatingToolbar:(BLCAwesomeFloatingToolbar *)toolbar didTryToPanWithOffset:(CGPoint)offset {
+    CGPoint startingPoint = toolbar.frame.origin;
+    CGPoint newPoint = CGPointMake(startingPoint.x + offset.x, startingPoint.y + offset.y);
+    
+    CGRect potentialNewFrame = CGRectMake(newPoint.x, newPoint.y, CGRectGetWidth(toolbar.frame), CGRectGetHeight(toolbar.frame));
+    
+    if (CGRectContainsRect(self.view.bounds, potentialNewFrame)) {
+        toolbar.frame = potentialNewFrame;
+    }
+}
+
+- (void) floatingToolbar:(BLCAwesomeFloatingToolbar *)toolbar didTryToScaleWithScalar:(CGFloat)scale {
+    
+    CGPoint startingPoint = toolbar.frame.origin;
+    CGPoint newPoint = CGPointMake(startingPoint.x , startingPoint.y);
+    
+    CGFloat newScale = 1 -  (_lastScale - scale);
+    
+    CGRect potentialNewFrame = CGRectMake(newPoint.x, newPoint.y, (CGRectGetWidth(toolbar.frame)*newScale), (CGRectGetHeight(toolbar.frame)*newScale));
+    
+    if (CGRectGetWidth(potentialNewFrame)<= 280 && CGRectGetWidth(potentialNewFrame)>= 150 && CGRectContainsRect(self.view.bounds, potentialNewFrame))
+        self.awesomeToolbar.frame = potentialNewFrame;
+    
+    NSLog(@"New scalar: %f", scale);
+    _lastScale = scale;
+//    NSLog(@"New rect: %@", NSStringFromRect(potentialNewFrame));
+
+    
+    //if (CGRectContainsRect(self.view.bounds, potentialNewFrame))
+    //{
+    //self.awesomeToolbar.frame = potentialNewFrame;
+    //}
+    
+}
+
 
 
 /*
